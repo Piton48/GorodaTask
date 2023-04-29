@@ -11,20 +11,36 @@ public class Main {
 
     public static void main(String[] args) {
         int port = 8080;
-        try (ServerSocket serverSocket = new ServerSocket(port);
-             Socket clientSocket = serverSocket.accept();
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
 
-            out.println("What is your name?");
+            String actual = "Введите название города:";
+            String letter = null;
 
-            System.out.println("New connection accepted");
+            while (true) {
+                try (Socket clientSocket = serverSocket.accept();
+                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                     BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
 
-            String name = in.readLine();
+                    out.println(actual);
+                    String sent = in.readLine();
 
-            out.println(String.format("Hi %s, your port is %d", name, clientSocket.getPort()));
+                    if (actual.equals("Введите название города:")) {
+                        actual = sent;
+                        letter = String.valueOf(sent.charAt(sent.length() - 1)).toLowerCase();
+                        out.println("Ок");
+                        continue;
+                    }
 
+                    if (String.valueOf(sent.charAt(0)).toLowerCase().equals(letter)) {
+                        out.println("Ok");
+                        actual = sent;
+                        letter = String.valueOf(actual.charAt(actual.length() - 1)).toLowerCase();
+                    } else {
+                        out.println("Not Ok");
+                    }
 
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
